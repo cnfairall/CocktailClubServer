@@ -11,6 +11,8 @@ namespace CocktailClub
         public DbSet<Spirit> Spirits { get; set; }
         public DbSet<User> Users { get; set; }
 
+        public DbSet<CocktailIngredient> CocktailIngredients { get; set; }
+
         public CCDbContext(DbContextOptions<CCDbContext> context) : base(context)
         {
 

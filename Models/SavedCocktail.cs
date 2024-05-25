@@ -14,7 +14,7 @@
         public string? Notes { get; set; }
         public bool Made { get; set; }
         public bool Public { get; set; }
-        public ICollection<Ingredient> Ingredients { get; set; }
+        public List<CocktailIngredient> CocktailIngredients { get; set; } = new List<CocktailIngredient>();
 
     }
 }

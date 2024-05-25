@@ -13,7 +13,8 @@ namespace CocktailClub.Api
             {
                 List<SavedCocktail> savedCocktails = db.SavedCocktails
                 .Include(c => c.Glass)
-                .Include(c => c.Ingredients)
+                .Include(c => c.CocktailIngredients)
+                .ThenInclude(ci => ci.Ingredient)
                 .Where(c => c.UserId == userId).ToList();
                 if (savedCocktails == null)
                 {
@@ -31,7 +32,8 @@ namespace CocktailClub.Api
             {
                 List<SavedCocktail> publicCocktails = db.SavedCocktails
                 .Include(c => c.Glass)
-                .Include(c => c.Ingredients)
+                .Include(c => c.CocktailIngredients)
+                .ThenInclude(ci => ci.Ingredient)
                 .Where(c => c.Public == true).ToList();
                 if (publicCocktails == null)
                 {
@@ -49,7 +51,9 @@ namespace CocktailClub.Api
             {
                 SavedCocktail cocktail = db.SavedCocktails
                 .Include (c => c.Glass)
-                .Include(c => c.Ingredients).SingleOrDefault(c => c.Id == id);
+                .Include(c => c.CocktailIngredients)
+                .ThenInclude (ci => ci.Ingredient)
+                .SingleOrDefault(c => c.Id == id);
                 if (cocktail == null)
                 {
                     return Results.NotFound("No cocktail found");
@@ -99,7 +103,8 @@ namespace CocktailClub.Api
             {
                 SavedCocktail cocktailToUpdate = db.SavedCocktails
                 .Include(c => c.Glass)
-                .Include(c => c.Ingredients)
+                .Include(c => c.CocktailIngredients)
+                .ThenInclude(ci => ci.Ingredient)
                 .SingleOrDefault(c => c.Id == cocktail.Id);
                 if (cocktailToUpdate == null)
                 {
@@ -111,7 +116,7 @@ namespace CocktailClub.Api
                 cocktailToUpdate.Grade = cocktail.Grade;
                 cocktailToUpdate.GlassId = cocktail.GlassId;
                 cocktailToUpdate.Instructions = cocktail.Instructions;
-                cocktailToUpdate.Ingredients = cocktail.Ingredients;
+                cocktailToUpdate.CocktailIngredients = cocktail.CocktailIngredients;
 
                 db.SaveChanges();
                 return Results.Ok("cocktail updated");
@@ -138,7 +143,7 @@ namespace CocktailClub.Api
                     UserId = userId,
                     Name = publicCocktail.Name,
                     Instructions = publicCocktail.Instructions,
-                    Ingredients = publicCocktail.Ingredients,
+                    CocktailIngredients = publicCocktail.CocktailIngredients,
                     GlassId = publicCocktail.GlassId,
                     DrinkId = publicCocktail.DrinkId,
                 };
