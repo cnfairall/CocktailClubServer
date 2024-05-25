@@ -49,5 +49,6 @@ UserApi.Map(app);
 SavedCocktailApi.Map(app);
 GlassApi.Map(app);
 SpiritApi.Map(app);
+IngredientApi.Map(app);
 
 app.Run();
