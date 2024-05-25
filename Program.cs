@@ -47,5 +47,7 @@ app.UseCors();
 
 UserApi.Map(app);
 SavedCocktailApi.Map(app);
+GlassApi.Map(app);
+SpiritApi.Map(app);
 
 app.Run();
