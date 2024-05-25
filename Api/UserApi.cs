@@ -27,7 +27,7 @@ namespace CocktailClub.Api
             {
                 db.Users.Add(userObj);
                 db.SaveChanges();
-                return Results.Created($"/user/{userObj.Id}", userObj);
+                return Results.Created($"/users/${userObj.Id}", userObj);
             });
 
             //get user

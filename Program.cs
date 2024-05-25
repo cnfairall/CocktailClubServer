@@ -46,5 +46,6 @@ app.UseHttpsRedirection();
 app.UseCors();
 
 UserApi.Map(app);
+SavedCocktailApi.Map(app);
 
 app.Run();
