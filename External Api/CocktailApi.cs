@@ -22,7 +22,8 @@ namespace CocktailClub.External_Api
 
                     if (cocktailResponse != null)
                     {
-                        return Results.Ok(cocktailResponse.Drinks);
+                        var cocktailDto = CocktailDto.FromCocktailResponse(cocktailResponse);
+                        return Results.Ok(cocktailDto);
                     }
                     return Results.NotFound("no cocktails found");
                 }
@@ -44,7 +45,8 @@ namespace CocktailClub.External_Api
 
                     if (cocktailResponse != null)
                     {
-                        return Results.Ok(cocktailResponse.Drinks);
+                        var cocktailDto = CocktailDto.FromCocktailResponse(cocktailResponse);
+                        return Results.Ok(cocktailDto);
                     }
                     return Results.NotFound("no cocktails found");
                 }
@@ -65,7 +67,8 @@ namespace CocktailClub.External_Api
                     var cocktailResponse = JsonConvert.DeserializeObject<ExtCocktailResponse>(json);
                     if (cocktailResponse != null)
                     {
-                        return Results.Ok(cocktailResponse.Drinks);
+                        var cocktailDto = CocktailDto.FromCocktailResponse(cocktailResponse);
+                        return Results.Ok(cocktailDto);
                     }
                     return Results.NotFound("no cocktails found");
                 }
@@ -85,7 +88,8 @@ namespace CocktailClub.External_Api
                     var json = await response.Content.ReadAsStringAsync();
                     var cocktailResponse = JsonConvert.DeserializeObject<ExtCocktailResponse>(json);
 
-                    return Results.Ok(cocktailResponse.Drinks);
+                    var cocktailDto = CocktailDto.FromCocktailResponse(cocktailResponse);
+                    return Results.Ok(cocktailDto);
                 }
 
                 return Results.StatusCode((int)response.StatusCode);

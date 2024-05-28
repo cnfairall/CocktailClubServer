@@ -61,8 +61,8 @@ namespace CocktailClub.Api
                 return Results.Ok(cocktail);
             });
 
-            //save cocktail
-            app.MapPost("/api/savedcocktails/save", (CCDbContext db, SavedCocktail cocktail) =>
+            //create cocktail
+            app.MapPost("/api/savedcocktails/create", (CCDbContext db, SavedCocktail cocktail) =>
             {
                 db.SavedCocktails.Add(cocktail);
                 db.SaveChanges();
@@ -84,6 +84,7 @@ namespace CocktailClub.Api
                 Glass glass = db.Glasses.SingleOrDefault(g => g.Name == cocktailDto.StrGlass);
                 if (glass != null) //if we don't have to make a new glass, save cocktail
                 {
+
                     var cocktailToSave = new SavedCocktail()
                     {
                         Name = cocktailDto.StrDrink,
