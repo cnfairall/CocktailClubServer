@@ -111,44 +111,7 @@ namespace CocktailClub.Api
                 };
                 db.SavedCocktails.Add(cocktail);
                 db.SaveChanges();
-                SavedCocktail cocktailToPatch = db.SavedCocktails
-                .Include(c => c.CocktailIngredients)
-                .ThenInclude(ci => ci.Ingredient)
-                .SingleOrDefault(c => c.Id == cocktail.Id);
-                if (cocktailToPatch == null)
-                {
-                    return Results.BadRequest("cocktail not found");
-                }
-                //find ingredients in db
-                foreach (var item in cocktailDto.CocktailIngredients)
-                {
-                    Ingredient ingredient = db.Ingredients.SingleOrDefault(i => i.Name == item.Key);
-                    if (ingredient != null)
-                    {
-                        var ci = new CocktailIngredient()
-                        {
-                            IngredientId = ingredient.Id,
-                            SavedCocktailId = cocktailToPatch.Id,
-                            Amount = item.Value
-                        };
-                        cocktailToPatch.CocktailIngredients.Add(ci);
-                    }
-                    else
-                    {
-                        var c = new CocktailIngredient()
-                        {
-                            Ingredient = new Ingredient()
-                            {
-                                Name = item.Key,
-                            },
-                            SavedCocktailId = cocktailToPatch.Id,
-                            Amount = item.Value
-                        };
-                        cocktailToPatch.CocktailIngredients.Add(c);
-                    }
-                }
-                db.SaveChanges();
-                return Results.Ok(cocktailToPatch);
+                return Results.Ok(cocktail);
 
             });
 
