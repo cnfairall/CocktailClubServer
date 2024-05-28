@@ -22,7 +22,8 @@ namespace CocktailClub.External_Api
 
                     if (cocktailResponse != null)
                     {
-                        return Results.Ok(cocktailResponse.Drinks);
+                        var cocktailDto = CocktailDto.FromCocktailResponse(cocktailResponse);
+                        return Results.Ok(cocktailDto);
                     }
                     return Results.NotFound("no cocktails found");
                 }
