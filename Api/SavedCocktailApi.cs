@@ -70,6 +70,94 @@ namespace CocktailClub.Api
 
             });
 
+          //save cocktail from external API: Part I: adding cocktail to db
+            app.MapPost("/api/savedcocktails/{userId}/save", (CCDbContext db, CocktailDto cocktailDto, int userId) =>
+            {
+                //check if cocktail is already saved
+                SavedCocktail sc = db.SavedCocktails.SingleOrDefault(sc => sc.DrinkId == Convert.ToInt16(cocktailDto.IdDrink));
+                if (sc != null)
+                {
+                    return Results.BadRequest("Cocktail already saved");
+                }
+        
+                //if not, find glass in db
+                Glass glass = db.Glasses.SingleOrDefault(g => g.Name == cocktailDto.StrGlass);
+                if (glass != null) //if we don't have to make a new glass, save cocktail
+                {
+                    var cocktailToSave = new SavedCocktail()
+                    {
+                        Name = cocktailDto.StrDrink,
+                        DrinkId = Convert.ToInt16(cocktailDto.IdDrink),
+                        UserId = userId,
+                        GlassId = glass.Id,
+                        ImageUrl = cocktailDto.StrDrinkThumb,
+                        Instructions = cocktailDto.StrInstructions,
+                    };
+                    db.SavedCocktails.Add(cocktailToSave);
+                    db.SaveChanges();
+                    return Results.Ok(cocktailToSave);
+                } //else create glass 
+                var cocktail = new SavedCocktail()
+                {
+                    Name = cocktailDto.StrDrink,
+                    DrinkId = Convert.ToInt16(cocktailDto.IdDrink),
+                    UserId = userId,
+                    Glass = new Glass()
+                    {
+                        Name = cocktailDto.StrGlass
+                    },
+                    ImageUrl = cocktailDto.StrDrinkThumb,
+                    Instructions = cocktailDto.StrInstructions,
+                };
+                db.SavedCocktails.Add(cocktail);
+                db.SaveChanges();
+                return Results.Ok(cocktail);
+            });
+
+            //save cocktail: Part II: adding ingredients
+            app.MapPatch("/api/savedcocktails/add/{cocktailId}", (CCDbContext db, int cocktailId, CocktailDto cocktailDto) =>
+            {
+                SavedCocktail cocktailToPatch = db.SavedCocktails
+                .Include(c => c.CocktailIngredients)
+                .ThenInclude(ci => ci.Ingredient)
+                .SingleOrDefault(c => c.Id == cocktailId);
+                if (cocktailToPatch == null)
+                {
+                    return Results.BadRequest("cocktail not found");
+                }
+                //find ingredients in db
+                foreach (var item in cocktailDto.CocktailIngredients)
+                {
+                    Ingredient ingredient = db.Ingredients.SingleOrDefault(i => i.Name == item.Key);
+                    if (ingredient != null)
+                    {
+                        var ci = new CocktailIngredient()
+                        {
+                            IngredientId = ingredient.Id,
+                            SavedCocktailId = cocktailToPatch.Id,
+                            Amount = item.Value
+                        };
+                        cocktailToPatch.CocktailIngredients.Add(ci);
+                    } else
+
+                    {
+                        var c = new CocktailIngredient()
+                        {
+                            Ingredient = new Ingredient()
+                            {
+                                Name = item.Key,
+                            },
+                            SavedCocktailId = cocktailToPatch.Id,
+                            Amount = item.Value
+                        };
+                        cocktailToPatch.CocktailIngredients.Add(c);
+                    }     
+                }
+                db.SaveChanges();
+                return Results.Ok(cocktailToPatch);
+
+            });
+
             //review cocktail
             app.MapPatch("/api/savedcocktails/review", (CCDbContext db, ReviewDto review) =>
             {
