@@ -61,8 +61,8 @@ namespace CocktailClub.Api
                 return Results.Ok(cocktail);
             });
 
-            //create cocktail
-            app.MapPost("/api/savedcocktails/create", (CCDbContext db, SavedCocktail cocktail) =>
+            //save cocktail
+            app.MapPost("/api/savedcocktails/save", (CCDbContext db, SavedCocktail cocktail) =>
             {
                 db.SavedCocktails.Add(cocktail);
                 db.SaveChanges();
@@ -70,7 +70,7 @@ namespace CocktailClub.Api
 
             });
 
-            //save cocktail from external API: Part I: adding cocktail to db
+          //save cocktail from external API: Part I: adding cocktail to db
             app.MapPost("/api/savedcocktails/{userId}/save", (CCDbContext db, CocktailDto cocktailDto, int userId) =>
             {
                 //check if cocktail is already saved
@@ -95,7 +95,7 @@ namespace CocktailClub.Api
                     };
                     db.SavedCocktails.Add(cocktailToSave);
                     db.SaveChanges();
-                    return Results.Ok(cocktailToSave.Id);
+                    return Results.Ok(cocktailToSave);
                 } //else create glass 
                 var cocktail = new SavedCocktail()
                 {
@@ -112,7 +112,6 @@ namespace CocktailClub.Api
                 db.SavedCocktails.Add(cocktail);
                 db.SaveChanges();
                 return Results.Ok(cocktail);
-
             });
 
             //save cocktail: Part II: adding ingredients
@@ -239,33 +238,6 @@ namespace CocktailClub.Api
                 db.SavedCocktails.Add(newCocktail);
                 db.SaveChanges();
                 return Results.Created($"/savedcocktails/${newCocktail.Id}", newCocktail);
-            });
-
-            //filter saved by spirit
-            app.MapGet("/api/savedcocktails/spirit/{userId}/{spiritName}", (CCDbContext db, int userId, string spiritName) =>
-            {
-                var filteredCocktails = db.SavedCocktails
-                .Include(sc => sc.CocktailIngredients)
-                .ThenInclude(ci => ci.Ingredient)
-                .Where(i => i.UserId == userId && i.Name.Contains(spiritName)).ToList();
-                if (filteredCocktails == null)
-                {
-                    return Results.NotFound("no results found");
-                }
-                return Results.Ok(filteredCocktails);
-            });
-
-            //filter saved by glass
-            app.MapGet("/api/savedcocktails/glass/{userId}/{glassName}", (CCDbContext db, int userId, string glassName) =>
-            {
-                var filteredCocktails = db.SavedCocktails
-                .Include(sc => sc.Glass)
-                .Where(i => i.UserId == userId && i.Name.Contains(glassName)).ToList();
-                if (filteredCocktails == null)
-                {
-                    return Results.NotFound("no results found");
-                }
-                return Results.Ok(filteredCocktails);
             });
         }
     }

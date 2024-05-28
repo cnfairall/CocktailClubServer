@@ -1,6 +1,4 @@
-﻿using CocktailClub.Models;
-
-namespace CocktailClub
+﻿namespace CocktailClub
 {
     //Cocktails.Db external API returns array of drink objects
     public class ExtCocktailResponse
@@ -98,7 +96,7 @@ namespace CocktailClub
         //API returns 15 ingredients and measures for every cocktail whether truthy or null
         //ensures correct ingredient is matched to correct measurement
 
-        public static Dictionary<string, string> CreateCocktailIngredientsDictionary(Cocktail cocktail)
+        private static Dictionary<string, string> CreateCocktailIngredientsDictionary(Cocktail cocktail)
         {
             var cocktailIngredients = new Dictionary<string, string>();
 
@@ -122,14 +120,12 @@ namespace CocktailClub
             return cocktailIngredients;
         }
         //method to add needed cocktailIngredients to dictionary 
-        public static void AddCocktailIngredient(Dictionary<string, string> cocktailIngredients, string ingredient, string measure)
+        private static void AddCocktailIngredient(Dictionary<string, string> cocktailIngredients, string ingredient, string measure)
         {
             if (!string.IsNullOrEmpty(ingredient) && !string.IsNullOrEmpty(measure))
             {
                 cocktailIngredients[ingredient] = measure;
             }
         }
-
- 
     }
 }
