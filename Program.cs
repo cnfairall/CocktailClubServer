@@ -1,7 +1,9 @@
 using System.Text.Json.Serialization;
 using CocktailClub;
 using CocktailClub.Api;
+using CocktailClub.External_Api;
 using Microsoft.AspNetCore.Http.Json;
+using Newtonsoft.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,5 +52,6 @@ SavedCocktailApi.Map(app);
 GlassApi.Map(app);
 SpiritApi.Map(app);
 IngredientApi.Map(app);
+CocktailApi.Map(app);
 
 app.Run();
