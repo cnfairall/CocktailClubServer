@@ -67,8 +67,6 @@
     {
         public string IdDrink { get; set; }
         public string StrDrink { get; set; }
-        public string StrCategory { get; set; }
-        public string StrAlcoholic { get; set; }
         public string StrGlass { get; set; }
         public string StrInstructions { get; set; }
         public string StrDrinkThumb { get; set; }
@@ -83,8 +81,6 @@
             {
                 IdDrink = c.IdDrink,
                 StrDrink = c.StrDrink,
-                StrCategory = c.StrCategory,
-                StrAlcoholic = c.StrAlcoholic,
                 StrGlass = c.StrGlass,
                 StrInstructions = c.StrInstructions,
                 StrDrinkThumb = c.StrDrinkThumb,

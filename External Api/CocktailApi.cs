@@ -59,7 +59,7 @@ namespace CocktailClub.External_Api
             {
 
                 using var client = new HttpClient();
-                var response = await client.GetAsync($"{apiUrl}/filter.php?g={glassName}_glass");
+                var response = await client.GetAsync($"{apiUrl}/filter.php?g={glassName}");
 
                 if (response.IsSuccessStatusCode)
                 {
