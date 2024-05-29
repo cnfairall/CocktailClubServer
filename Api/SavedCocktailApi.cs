@@ -70,7 +70,7 @@ namespace CocktailClub.Api
 
             });
 
-          //save cocktail from external API
+            //save cocktail from external API
             app.MapPost("/api/savedcocktails/{userId}/save", (CCDbContext db, CocktailDto cocktailDto, int userId) =>
             {
                 //check user has already saved this cocktail
@@ -230,6 +230,33 @@ namespace CocktailClub.Api
                     db.SaveChanges();
                     return Results.Created($"/savedcocktails/${newCocktail.Id}", newCocktail);
                 }
+            });
+
+            //filter user's cocktails by spirit
+            app.MapGet("/api/savedcocktails/user/{userId}/spirit/{spiritName}", (CCDbContext db, int userId, string spiritName) =>
+            {
+                List<SavedCocktail> filteredCocktails = db.SavedCocktails
+                .Include(c => c.CocktailIngredients)
+                .ThenInclude(ci => ci.Ingredient)
+                .Where(c => c.UserId == userId && c.CocktailIngredients.Any(ci => ci.Ingredient.Name.Contains(spiritName))).ToList();
+                if (filteredCocktails == null)
+                {
+                    return Results.NotFound("no results found");
+                }
+                return Results.Ok(filteredCocktails);
+            });
+
+            //filter user's cocktails by glass
+            app.MapGet("/api/savedcocktails/user/{userId}/glass/{glassName}", (CCDbContext db, int userId, string glassName) =>
+            {
+                List<SavedCocktail> filteredCocktails = db.SavedCocktails
+                .Include(c => c.Glass)
+                .Where(c => c.UserId == userId && c.Glass.Name.Contains(glassName)).ToList();
+                if (filteredCocktails == null)
+                {
+                    return Results.NotFound("no results found");
+                }
+                return Results.Ok(filteredCocktails);
             });
         }
     }
