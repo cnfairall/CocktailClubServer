@@ -23,7 +23,6 @@ namespace CocktailClub.Api
                 else
                 {
                     return Results.Ok(savedCocktails);
-
                 }
             });
 
@@ -42,7 +41,6 @@ namespace CocktailClub.Api
                 else
                 {
                     return Results.Ok(publicCocktails);
-
                 }
             });
 
@@ -57,8 +55,10 @@ namespace CocktailClub.Api
                 if (cocktail == null)
                 {
                     return Results.NotFound("No cocktail found");
+                } else
+                {
+                    return Results.Ok(cocktail);
                 }
-                return Results.Ok(cocktail);
             });
 
             //create cocktail
@@ -70,21 +70,34 @@ namespace CocktailClub.Api
 
             });
 
-          //save cocktail from external API: Part I: adding cocktail to db
+            //save cocktail from external API
             app.MapPost("/api/savedcocktails/{userId}/save", (CCDbContext db, CocktailDto cocktailDto, int userId) =>
             {
-                //check if cocktail is already saved
-                SavedCocktail sc = db.SavedCocktails.SingleOrDefault(sc => sc.DrinkId == Convert.ToInt16(cocktailDto.IdDrink));
+                //check user has already saved this cocktail
+                SavedCocktail sc = db.SavedCocktails.SingleOrDefault(sc => sc.UserId == userId && sc.DrinkId == Convert.ToInt16(cocktailDto.IdDrink));
                 if (sc != null)
                 {
                     return Results.BadRequest("Cocktail already saved");
                 }
+
+                //if not, find ingredients
+                var ciList = new List<CocktailIngredient>();
+                foreach (var item in cocktailDto.CocktailIngredients)
+                {
+                   Ingredient ingredient = db.Ingredients.SingleOrDefault(i => i.Name == item.Key.ToLower());
+                   if (ingredient == null)
+                   {
+                      ciList.Add(new CocktailIngredient() { Ingredient = new Ingredient() { Name = item.Key.ToLower() }, Amount = item.Value });
+                   } else
+                   {
+                      ciList.Add(new CocktailIngredient() { Ingredient = ingredient, Amount = item.Value });
+                   }
+                }
         
-                //if not, find glass in db
-                Glass glass = db.Glasses.SingleOrDefault(g => g.Name == cocktailDto.StrGlass);
+                //then find glass in db
+                Glass glass = db.Glasses.SingleOrDefault(g => cocktailDto.StrGlass.Contains(g.Name));
                 if (glass != null) //if we don't have to make a new glass, save cocktail
                 {
-
                     var cocktailToSave = new SavedCocktail()
                     {
                         Name = cocktailDto.StrDrink,
@@ -93,70 +106,31 @@ namespace CocktailClub.Api
                         GlassId = glass.Id,
                         ImageUrl = cocktailDto.StrDrinkThumb,
                         Instructions = cocktailDto.StrInstructions,
+                        CocktailIngredients = ciList
                     };
                     db.SavedCocktails.Add(cocktailToSave);
                     db.SaveChanges();
                     return Results.Ok(cocktailToSave);
-                } //else create glass 
-                var cocktail = new SavedCocktail()
-                {
-                    Name = cocktailDto.StrDrink,
-                    DrinkId = Convert.ToInt16(cocktailDto.IdDrink),
-                    UserId = userId,
-                    Glass = new Glass()
-                    {
-                        Name = cocktailDto.StrGlass
-                    },
-                    ImageUrl = cocktailDto.StrDrinkThumb,
-                    Instructions = cocktailDto.StrInstructions,
-                };
-                db.SavedCocktails.Add(cocktail);
-                db.SaveChanges();
-                return Results.Ok(cocktail);
-            });
-
-            //save cocktail: Part II: adding ingredients
-            app.MapPatch("/api/savedcocktails/add/{cocktailId}", (CCDbContext db, int cocktailId, CocktailDto cocktailDto) =>
-            {
-                SavedCocktail cocktailToPatch = db.SavedCocktails
-                .Include(c => c.CocktailIngredients)
-                .ThenInclude(ci => ci.Ingredient)
-                .SingleOrDefault(c => c.Id == cocktailId);
-                if (cocktailToPatch == null)
-                {
-                    return Results.BadRequest("cocktail not found");
                 }
-                //find ingredients in db
-                foreach (var item in cocktailDto.CocktailIngredients)
+                else //else create glass 
                 {
-                    Ingredient ingredient = db.Ingredients.SingleOrDefault(i => i.Name == item.Key);
-                    if (ingredient != null)
+                    var cocktail = new SavedCocktail()
                     {
-                        var ci = new CocktailIngredient()
+                        Name = cocktailDto.StrDrink,
+                        DrinkId = Convert.ToInt16(cocktailDto.IdDrink),
+                        UserId = userId,
+                        Glass = new Glass()
                         {
-                            IngredientId = ingredient.Id,
-                            SavedCocktailId = cocktailToPatch.Id,
-                            Amount = item.Value
-                        };
-                        cocktailToPatch.CocktailIngredients.Add(ci);
-                    } else
-
-                    {
-                        var c = new CocktailIngredient()
-                        {
-                            Ingredient = new Ingredient()
-                            {
-                                Name = item.Key,
-                            },
-                            SavedCocktailId = cocktailToPatch.Id,
-                            Amount = item.Value
-                        };
-                        cocktailToPatch.CocktailIngredients.Add(c);
-                    }     
+                            Name = cocktailDto.StrGlass
+                        },
+                        ImageUrl = cocktailDto.StrDrinkThumb,
+                        Instructions = cocktailDto.StrInstructions,
+                        CocktailIngredients= ciList
+                    };
+                    db.SavedCocktails.Add(cocktail);
+                    db.SaveChanges();
+                    return Results.Ok(cocktail);
                 }
-                db.SaveChanges();
-                return Results.Ok(cocktailToPatch);
-
             });
 
             //review cocktail
@@ -175,70 +149,114 @@ namespace CocktailClub.Api
             });
 
             //share cocktail
-            app.MapPatch("/api/savedcocktails/share", (CCDbContext db, int id) =>
+            app.MapPatch("/api/savedcocktails/{id}/share", (CCDbContext db, int id) =>
             {
                 SavedCocktail cocktail = db.SavedCocktails.SingleOrDefault(c => c.Id == id);
                 if (cocktail == null)
                 {
                     return Results.BadRequest("Cocktail not found");
                 }
-                cocktail.Public = true;
-                db.SaveChanges();
-                return Results.Ok("cocktail shared");
+                else
+                {
+                    cocktail.Public = true;
+                    db.SaveChanges();
+                    return Results.Ok("cocktail shared");
+                }
             });
 
             //edit cocktail
-            app.MapPut("/api/savedcocktails/{cocktail.Id}", (CCDbContext db, SavedCocktail cocktail) =>
+            app.MapPut("/api/savedcocktails/edit", (CCDbContext db, SavedCocktail cocktail) =>
             {
                 SavedCocktail cocktailToUpdate = db.SavedCocktails
                 .Include(c => c.Glass)
                 .Include(c => c.CocktailIngredients)
                 .ThenInclude(ci => ci.Ingredient)
                 .SingleOrDefault(c => c.Id == cocktail.Id);
-                if (cocktailToUpdate == null)
+                if (cocktailToUpdate != null)
                 {
-                    return Results.NotFound("No cocktail found");
-                }
-                cocktailToUpdate.Name = cocktail.Name;
-                cocktailToUpdate.ImageUrl = cocktail.ImageUrl;
-                cocktailToUpdate.Notes = cocktail.Notes;
-                cocktailToUpdate.Grade = cocktail.Grade;
-                cocktailToUpdate.GlassId = cocktail.GlassId;
-                cocktailToUpdate.Instructions = cocktail.Instructions;
-                cocktailToUpdate.CocktailIngredients = cocktail.CocktailIngredients;
+                   cocktailToUpdate.Name = cocktail.Name;
+                   cocktailToUpdate.ImageUrl = cocktail.ImageUrl;
+                   cocktailToUpdate.Notes = cocktail.Notes;
+                   cocktailToUpdate.Grade = cocktail.Grade;
+                   cocktailToUpdate.GlassId = cocktail.GlassId;
+                   cocktailToUpdate.Instructions = cocktail.Instructions;
+                   cocktailToUpdate.CocktailIngredients = cocktail.CocktailIngredients;
 
-                db.SaveChanges();
-                return Results.Ok("cocktail updated");
+                   db.SaveChanges();
+                   return Results.Ok("cocktail updated");
+                } else
+                {
+                  return Results.NotFound("No cocktail found");
+                }
             });
 
             //delete cocktail
             app.MapDelete("/api/savedcocktails/{id}", (CCDbContext db, int id) =>
             {
                 SavedCocktail cocktail = db.SavedCocktails.SingleOrDefault(c => c.Id == id);
-                if (cocktail == null)
+                if (cocktail != null)
+                {
+                    db.SavedCocktails.Remove(cocktail);
+                    db.SaveChanges();
+                    return Results.Ok("cocktail removed");
+                } else
                 {
                     return Results.NotFound("No cocktail found");
                 }
-                db.SavedCocktails.Remove(cocktail);
-                db.SaveChanges();
-                return Results.Ok("cocktail removed");
             });
 
             //add public cocktail to saved
-            app.MapPost("/api/savedcocktails/add", (CCDbContext db, int userId, SavedCocktail publicCocktail) =>
+            app.MapPost("/api/savedcocktails/{cocktailId}/add/{userId}", (CCDbContext db, int userId, int cocktailId) =>
             {
-                var newCocktail = new SavedCocktail()
+                SavedCocktail cocktailToCopy = db.SavedCocktails
+                .Include(c => c.CocktailIngredients)
+                .SingleOrDefault(c => c.Id == cocktailId);
+                if (cocktailToCopy == null)
                 {
-                    UserId = userId,
-                    Name = publicCocktail.Name,
-                    Instructions = publicCocktail.Instructions,
-                    CocktailIngredients = publicCocktail.CocktailIngredients,
-                    GlassId = publicCocktail.GlassId,
-                    DrinkId = publicCocktail.DrinkId,
-                };
-                db.SavedCocktails.Add(newCocktail);
-                db.SaveChanges();
-                return Results.Created($"/savedcocktails/${newCocktail.Id}", newCocktail);
+                    return Results.BadRequest("no cocktail found");
+                } else
+                {
+                    var newCocktail = new SavedCocktail()
+                    {
+                        UserId = userId,
+                        Name = cocktailToCopy.Name,
+                        Instructions = cocktailToCopy.Instructions,
+                        CocktailIngredients = cocktailToCopy.CocktailIngredients,
+                        GlassId = cocktailToCopy.GlassId,
+                        DrinkId = cocktailToCopy.DrinkId,
+                        ImageUrl = cocktailToCopy.ImageUrl,
+                    };
+                    db.SavedCocktails.Add(newCocktail);
+                    db.SaveChanges();
+                    return Results.Created($"/savedcocktails/${newCocktail.Id}", newCocktail);
+                }
+            });
+
+            //filter user's cocktails by spirit
+            app.MapGet("/api/savedcocktails/user/{userId}/spirit/{spiritName}", (CCDbContext db, int userId, string spiritName) =>
+            {
+                List<SavedCocktail> filteredCocktails = db.SavedCocktails
+                .Include(c => c.CocktailIngredients)
+                .ThenInclude(ci => ci.Ingredient)
+                .Where(c => c.UserId == userId && c.CocktailIngredients.Any(ci => ci.Ingredient.Name.Contains(spiritName))).ToList();
+                if (filteredCocktails == null)
+                {
+                    return Results.NotFound("no results found");
+                }
+                return Results.Ok(filteredCocktails);
+            });
+
+            //filter user's cocktails by glass
+            app.MapGet("/api/savedcocktails/user/{userId}/glass/{glassName}", (CCDbContext db, int userId, string glassName) =>
+            {
+                List<SavedCocktail> filteredCocktails = db.SavedCocktails
+                .Include(c => c.Glass)
+                .Where(c => c.UserId == userId && c.Glass.Name.Contains(glassName)).ToList();
+                if (filteredCocktails == null)
+                {
+                    return Results.NotFound("no results found");
+                }
+                return Results.Ok(filteredCocktails);
             });
         }
     }
