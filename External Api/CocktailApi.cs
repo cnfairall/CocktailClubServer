@@ -31,6 +31,29 @@ namespace CocktailClub.External_Api
                 return Results.StatusCode((int)response.StatusCode);
             });
 
+            //get cocktail by drink id
+            app.MapGet("/cocktails/drinkId/{drinkId}", async (string drinkId) =>
+            {
+
+                using var client = new HttpClient();
+                var response = await client.GetAsync($"{apiUrl}/lookup.php?i={drinkId}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    var cocktailResponse = JsonConvert.DeserializeObject<ExtCocktailResponse>(json);
+
+                    if (cocktailResponse != null)
+                    {
+                        var cocktailDto = CocktailDto.FromCocktailResponse(cocktailResponse);
+                        return Results.Ok(cocktailDto);
+                    }
+                    return Results.NotFound("no cocktails found");
+                }
+
+                return Results.StatusCode((int)response.StatusCode);
+            });
+
             //get cocktails by spirit
             app.MapGet("/cocktails/spirit/{spiritName}", async (string spiritName) =>
             {
@@ -59,7 +82,7 @@ namespace CocktailClub.External_Api
             {
 
                 using var client = new HttpClient();
-                var response = await client.GetAsync($"{apiUrl}/filter.php?g={glassName}");
+                var response = await client.GetAsync($"{apiUrl}/filter.php?g={glassName}_glass");
 
                 if (response.IsSuccessStatusCode)
                 {
