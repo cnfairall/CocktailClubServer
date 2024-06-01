@@ -8,12 +8,12 @@ namespace CocktailClub.Api
         public static void Map(WebApplication app)
         {
             //check user
-            app.MapGet("/api/checkuser/{uid}", (CCDbContext db, string uid) =>
+            app.MapPost("/api/checkuser", (CCDbContext db, AuthDto uid) =>
             {
-                var user = db.Users.SingleOrDefault(u => u.Uid == uid);
+                var user = db.Users.FirstOrDefault(u => u.Uid == uid.Uid);
                 if (user == null)
                 {
-                    return Results.NotFound("so user found");
+                    return Results.NotFound("user not found");
                 }
                 else
                 {
