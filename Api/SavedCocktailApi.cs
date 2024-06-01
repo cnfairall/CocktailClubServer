@@ -112,7 +112,7 @@ namespace CocktailClub.Api
                     db.SaveChanges();
                     return Results.Ok(cocktailToSave);
                 }
-                else //else create glass 
+                else //else create glass whilst saving cocktail
                 {
                     var cocktail = new SavedCocktail()
                     {
