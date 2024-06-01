@@ -216,19 +216,28 @@ namespace CocktailClub.Api
                     return Results.BadRequest("no cocktail found");
                 } else
                 {
-                    var newCocktail = new SavedCocktail()
+                    var userCopy = db.SavedCocktails
+                    .Include(sc => sc.CocktailIngredients)
+                    .Where(sc => sc.UserId == userId && sc.DrinkId == cocktailToCopy.DrinkId).ToList();
+                    if (userCopy != null)
                     {
-                        UserId = userId,
-                        Name = cocktailToCopy.Name,
-                        Instructions = cocktailToCopy.Instructions,
-                        CocktailIngredients = cocktailToCopy.CocktailIngredients,
-                        GlassId = cocktailToCopy.GlassId,
-                        DrinkId = cocktailToCopy.DrinkId,
-                        ImageUrl = cocktailToCopy.ImageUrl,
-                    };
-                    db.SavedCocktails.Add(newCocktail);
-                    db.SaveChanges();
-                    return Results.Created($"/savedcocktails/${newCocktail.Id}", newCocktail);
+                        return Results.BadRequest("user has already saved this cocktail");
+                    } else
+                    {
+                        var newCocktail = new SavedCocktail()
+                        {
+                            UserId = userId,
+                            Name = cocktailToCopy.Name,
+                            Instructions = cocktailToCopy.Instructions,
+                            CocktailIngredients = cocktailToCopy.CocktailIngredients,
+                            GlassId = cocktailToCopy.GlassId,
+                            DrinkId = cocktailToCopy.DrinkId,
+                            ImageUrl = cocktailToCopy.ImageUrl,
+                        };
+                        db.SavedCocktails.Add(newCocktail);
+                        db.SaveChanges();
+                        return Results.Created($"/savedcocktails/${newCocktail.Id}", newCocktail);
+                    }
                 }
             });
 
