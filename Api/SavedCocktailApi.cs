@@ -218,7 +218,7 @@ namespace CocktailClub.Api
                 {
                     var userCopy = db.SavedCocktails
                     .Include(sc => sc.CocktailIngredients)
-                    .Where(sc => sc.UserId == userId && sc.DrinkId == cocktailToCopy.DrinkId).ToList();
+                    .Where(sc => sc.UserId == userId && sc.DrinkId == cocktailToCopy.DrinkId).FirstOrDefault();
                     if (userCopy != null)
                     {
                         return Results.BadRequest("user has already saved this cocktail");

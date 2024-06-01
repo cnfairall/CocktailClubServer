@@ -13,7 +13,7 @@ namespace CocktailClub.Api
                 var user = db.Users.SingleOrDefault(u => u.Uid == uid);
                 if (user == null)
                 {
-                    return Results.NotFound();
+                    return Results.NotFound("so user found");
                 }
                 else
                 {
