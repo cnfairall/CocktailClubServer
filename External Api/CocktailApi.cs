@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using CocktailClub.Models;
+using Newtonsoft.Json;
 
 namespace CocktailClub.External_Api
 {
@@ -31,6 +32,7 @@ namespace CocktailClub.External_Api
                 return Results.StatusCode((int)response.StatusCode);
             });
 
+            
             //get cocktail by drink id
             app.MapGet("/cocktails/drinkId/{drinkId}", async (string drinkId) =>
             {
