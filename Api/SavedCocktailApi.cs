@@ -149,7 +149,7 @@ namespace CocktailClub.Api
             });
 
             //share cocktail
-            app.MapPatch("/api/savedcocktails/{id}/share", (CCDbContext db, int id) =>
+            app.MapGet("/api/savedcocktails/{id}/share", (CCDbContext db, int id) =>
             {
                 SavedCocktail cocktail = db.SavedCocktails.SingleOrDefault(c => c.Id == id);
                 if (cocktail == null)
