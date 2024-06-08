@@ -74,7 +74,7 @@ namespace CocktailClub.Api
             app.MapPost("/api/savedcocktails/{userId}/save", (CCDbContext db, CocktailDto cocktailDto, int userId) =>
             {
                 //check user has already saved this cocktail
-                SavedCocktail sc = db.SavedCocktails.SingleOrDefault(sc => sc.UserId == userId && sc.DrinkId == Convert.ToInt16(cocktailDto.IdDrink));
+                SavedCocktail sc = db.SavedCocktails.SingleOrDefault(sc => sc.UserId == userId && sc.DrinkId == Convert.ToInt32(cocktailDto.IdDrink));
                 if (sc != null)
                 {
                     return Results.BadRequest("Cocktail already saved");
@@ -101,7 +101,7 @@ namespace CocktailClub.Api
                     var cocktailToSave = new SavedCocktail()
                     {
                         Name = cocktailDto.StrDrink,
-                        DrinkId = Convert.ToInt16(cocktailDto.IdDrink),
+                        DrinkId = Convert.ToInt32(cocktailDto.IdDrink),
                         UserId = userId,
                         GlassId = glass.Id,
                         ImageUrl = cocktailDto.StrDrinkThumb,
@@ -117,7 +117,7 @@ namespace CocktailClub.Api
                     var cocktail = new SavedCocktail()
                     {
                         Name = cocktailDto.StrDrink,
-                        DrinkId = Convert.ToInt16(cocktailDto.IdDrink),
+                        DrinkId = Convert.ToInt32(cocktailDto.IdDrink),
                         UserId = userId,
                         Glass = new Glass()
                         {
