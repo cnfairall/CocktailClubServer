@@ -46,8 +46,9 @@ using (var scope = app.Services.CreateScope())
 
 // Configure the HTTP request pipeline.
 app.UseSwagger();
-    app.UseSwaggerUI();
+app.UseSwaggerUI();
 
+app.UseHttpsRedirection();
 app.UseCors();
 
 UserApi.Map(app);
