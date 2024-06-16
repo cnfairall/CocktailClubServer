@@ -3,6 +3,7 @@ using CocktailClub;
 using CocktailClub.Api;
 using CocktailClub.External_Api;
 using Microsoft.AspNetCore.Http.Json;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,7 +17,7 @@ builder.Services.AddSwaggerGen();
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 // allows our api endpoints to access the database through Entity Framework Core
-builder.Services.AddNpgsql<CCDbContext>(builder.Configuration["CocktailClubDbConnectionString"]);
+builder.Services.AddNpgsql<CCDbContext>(builder.Configuration.GetConnectionString("CocktailClubDbConnectionString"));
 
 // Set the JSON serializer options
 builder.Services.Configure<JsonOptions>(options =>
@@ -37,14 +38,16 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+using (var scope = app.Services.CreateScope())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    var dbContext = scope.ServiceProvider.GetRequiredService<CCDbContext>();
+    dbContext.Database.Migrate();
 }
 
-app.UseHttpsRedirection();
+// Configure the HTTP request pipeline.
+app.UseSwagger();
+    app.UseSwaggerUI();
+
 app.UseCors();
 
 UserApi.Map(app);
