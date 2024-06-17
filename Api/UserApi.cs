@@ -48,6 +48,11 @@ namespace CocktailClub.Api
                 {
                     return Results.NotFound("No such user");
                 }
+                List<SavedCocktail> usersCocktails = db.SavedCocktails.Where(cocktail => cocktail.UserId == userId).ToList();
+                foreach (SavedCocktail cocktail in usersCocktails)
+                {
+                    db.SavedCocktails.Remove(cocktail);
+                }
                 db.Users.Remove(user);
                 db.SaveChanges();
                 return Results.Ok("Account deleted");
