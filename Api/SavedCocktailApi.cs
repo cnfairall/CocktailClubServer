@@ -229,11 +229,14 @@ namespace CocktailClub.Api
                             UserId = userId,
                             Name = cocktailToCopy.Name,
                             Instructions = cocktailToCopy.Instructions,
-                            CocktailIngredients = cocktailToCopy.CocktailIngredients,
                             GlassId = cocktailToCopy.GlassId,
                             DrinkId = cocktailToCopy.DrinkId,
                             ImageUrl = cocktailToCopy.ImageUrl,
                         };
+                        foreach (CocktailIngredient cocktailIngredient in cocktailToCopy.CocktailIngredients)
+                        {
+                            newCocktail.CocktailIngredients.Add(cocktailIngredient);
+                        }
                         db.SavedCocktails.Add(newCocktail);
                         db.SaveChanges();
                         return Results.Created($"/savedcocktails/${newCocktail.Id}", newCocktail);
