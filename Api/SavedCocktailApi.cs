@@ -205,45 +205,6 @@ namespace CocktailClub.Api
                 }
             });
 
-            //add public cocktail to saved
-            app.MapPost("/api/savedcocktails/{cocktailId}/add/{userId}", (CCDbContext db, int userId, int cocktailId) =>
-            {
-                SavedCocktail cocktailToCopy = db.SavedCocktails
-                .Include(c => c.CocktailIngredients)
-                .SingleOrDefault(c => c.Id == cocktailId);
-                if (cocktailToCopy == null)
-                {
-                    return Results.BadRequest("no cocktail found");
-                } else
-                {
-                    var userCopy = db.SavedCocktails
-                    .Include(sc => sc.CocktailIngredients)
-                    .Where(sc => sc.UserId == userId && sc.DrinkId == cocktailToCopy.DrinkId).FirstOrDefault();
-                    if (userCopy != null)
-                    {
-                        return Results.BadRequest("user has already saved this cocktail");
-                    } else
-                    {
-                        var newCocktail = new SavedCocktail()
-                        {
-                            UserId = userId,
-                            Name = cocktailToCopy.Name,
-                            Instructions = cocktailToCopy.Instructions,
-                            GlassId = cocktailToCopy.GlassId,
-                            DrinkId = cocktailToCopy.DrinkId,
-                            ImageUrl = cocktailToCopy.ImageUrl,
-                        };
-                        foreach (CocktailIngredient cocktailIngredient in cocktailToCopy.CocktailIngredients)
-                        {
-                            newCocktail.CocktailIngredients.Add(cocktailIngredient);
-                        }
-                        db.SavedCocktails.Add(newCocktail);
-                        db.SaveChanges();
-                        return Results.Created($"/savedcocktails/${newCocktail.Id}", newCocktail);
-                    }
-                }
-            });
-
             //filter user's cocktails by spirit
             app.MapGet("/api/savedcocktails/user/{userId}/spirit/{spiritName}", (CCDbContext db, int userId, string spiritName) =>
             {
